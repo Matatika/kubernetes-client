@@ -36,6 +36,7 @@ import io.fabric8.kubernetes.api.model.PodBuilder;
 import io.fabric8.kubernetes.api.model.PodSpec;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.Service;
+import io.fabric8.kubernetes.api.model.Toleration;
 import io.fabric8.kubernetes.api.model.apiextensions.v1beta1.CustomResourceDefinition;
 import io.fabric8.kubernetes.api.model.apiextensions.v1beta1.JSONSchemaProps;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -57,6 +58,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
@@ -173,19 +175,19 @@ class SerializationTest {
     Pod pod = Serialization.unmarshal(fileInputStream);
     // Then
     assertThat(pod)
-      .isNotNull()
-      .hasFieldOrPropertyWithValue("metadata.name", "test-pod-with-alias")
-      .hasFieldOrPropertyWithValue("spec.nodeSelector.workload", "build")
-      .hasFieldOrPropertyWithValue("spec.tolerations.size", 1)
-      .hasFieldOrPropertyWithValue("spec.securityContext.runAsGroup", 1000L)
-      .hasFieldOrPropertyWithValue("spec.securityContext.runAsUser", 1000L)
-      .extracting(Pod::getSpec).extracting(PodSpec::getContainers).asList()
-      .hasSize(2)
-      .extracting("name", "image", "resources.requests.cpu")
-      .containsExactly(
-        new Tuple("ubuntu", "ubuntu:bionic", new Quantity("100m")),
-        new Tuple("python3", "python:3.7", new Quantity("100m"))
-      );
+        .isNotNull()
+        .hasFieldOrPropertyWithValue("metadata.name", "test-pod-with-alias")
+        .hasFieldOrPropertyWithValue("spec.nodeSelector.workload", "build")
+        .hasFieldOrPropertyWithValue("spec.securityContext.runAsGroup", 1000L)
+        .hasFieldOrPropertyWithValue("spec.securityContext.runAsUser", 1000L)
+        .extracting(Pod::getSpec)
+        .returns(Arrays.asList(new Toleration("NoSchedule", "nodeType", "Equal", null, "build")), PodSpec::getTolerations)
+        .extracting(PodSpec::getContainers).asList()
+        .hasSize(2)
+        .extracting("name", "image", "resources.requests.cpu")
+        .containsExactly(
+            new Tuple("ubuntu", "ubuntu:bionic", new Quantity("100m")),
+            new Tuple("python3", "python:3.7", new Quantity("100m")));
   }
 
   @Test
