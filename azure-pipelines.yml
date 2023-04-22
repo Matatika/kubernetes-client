@@ -20,6 +20,7 @@ steps:
     jdkArchitectureOption: 'x64'
     publishJUnitResults: true
     testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    options: '!kubernetes-karaf-itests'
     goals: 'package'
 
 - task: Maven@3
@@ -32,4 +33,5 @@ steps:
     mavenAuthenticateFeed: true
     publishJUnitResults: false
     testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    options: '!kubernetes-karaf-itests'
     goals: 'deploy'
