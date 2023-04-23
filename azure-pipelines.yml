@@ -11,6 +11,13 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
+- task: JavaToolInstaller@0
+  inputs:
+    versionSpec: '8'
+    jdkArchitectureOption: 'x64'
+    jdkSourceOption: 'PreInstalled'
+  displayName: 'Install JDK'
+
 - task: Maven@3
   inputs:
     mavenPomFile: 'pom.xml'
